@@ -1,0 +1,4 @@
+docker compose up --build
+docker compose ps
+docker compose exec fastapi pip list
+docker compose down
