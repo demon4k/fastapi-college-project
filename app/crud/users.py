@@ -1,49 +1,57 @@
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 
-users_db = {}
-current_user_id = 1
+
+async def get_all_users(db: AsyncSession):
+    result = await db.execute(select(User))
+    return result.scalars().all()
 
 
-def get_all_users():
-    return list(users_db.values())
+async def get_user_by_id(db: AsyncSession, user_id: int):
+    result = await db.execute(select(User).where(User.id == user_id))
+    return result.scalar_one_or_none()
 
 
-def get_user_by_id(user_id: int):
-    return users_db.get(user_id)
+async def create_user(db: AsyncSession, user: UserCreate):
+    new_user = User(
+        name=user.name,
+        email=user.email,
+        age=user.age,
+    )
 
-
-def create_user(user: UserCreate):
-    global current_user_id
-
-    new_user = {
-        "id": current_user_id,
-        "name": user.name,
-        "email": user.email,
-        "age": user.age
-    }
-
-    users_db[current_user_id] = new_user
-    current_user_id += 1
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
 
     return new_user
 
 
-def update_user(user_id: int, user: UserUpdate):
-    if user_id not in users_db:
+async def update_user(db: AsyncSession, user_id: int, user: UserUpdate):
+    db_user = await get_user_by_id(db, user_id)
+
+    if db_user is None:
         return None
 
-    users_db[user_id] = {
-        "id": user_id,
-        "name": user.name,
-        "email": user.email,
-        "age": user.age
-    }
+    db_user.name = user.name
+    db_user.email = user.email
+    db_user.age = user.age
 
-    return users_db[user_id]
+    await db.commit()
+    await db.refresh(db_user)
+
+    return db_user
 
 
-def delete_user(user_id: int):
-    if user_id not in users_db:
+async def delete_user(db: AsyncSession, user_id: int):
+    db_user = await get_user_by_id(db, user_id)
+
+    if db_user is None:
         return None
 
-    return users_db.pop(user_id)
+    await db.delete(db_user)
+    await db.commit()
+
+    return db_user
