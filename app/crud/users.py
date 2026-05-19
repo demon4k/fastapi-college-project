@@ -1,8 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
+
+from app.core.security import hash_password
 
 
 async def get_all_users(db: AsyncSession):
@@ -20,6 +23,7 @@ async def create_user(db: AsyncSession, user: UserCreate):
         name=user.name,
         email=user.email,
         age=user.age,
+        hashed_password=hash_password(user.password),
     )
 
     db.add(new_user)

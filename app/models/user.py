@@ -11,6 +11,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     age: Mapped[int]
+    hashed_password: Mapped[str] = mapped_column(String(255), default="")
 
     profile = relationship("Profile", back_populates="user", uselist=False)
     orders = relationship("Order", back_populates="user")
