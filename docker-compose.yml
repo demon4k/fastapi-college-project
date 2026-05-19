@@ -18,3 +18,13 @@ services:
       POSTGRES_DB: fastapi_db
     ports:
       - "5432:5432"
+
+  test_postgres:
+    image: postgres:17
+    container_name: test_postgres_db
+    environment:
+      POSTGRES_USER: test_admin
+      POSTGRES_PASSWORD: test_admin
+      POSTGRES_DB: fastapi_test_db
+    ports:
+      - "5433:5432"
