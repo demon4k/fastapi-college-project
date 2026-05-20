@@ -43,6 +43,7 @@ async def login(
         key="access_token",
         value=access_token,
         httponly=True,
+        path="/",
     )
 
     return {
@@ -53,6 +54,9 @@ async def login(
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token")
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+    )
 
     return {"message": "Successfully logged out"}
